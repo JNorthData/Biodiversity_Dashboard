@@ -1,16 +1,14 @@
 function optionChanged(selectedValue) {
-    // When the user selects a new value, update the demographic info and charts
-    updateDemographicInfo(selectedValue);
-    updateCharts(selectedValue);
-  }
+  // When the user selects a new value, update the demographic info and charts
+  updateDemographicInfo(selectedValue);
+  updateBarChart(selectedValue);
+}
 
 
 function updateDemographicInfo(subjectId) {
  
-
-  // Access the data.metadata array to find the matching metadata object
+  // Find the data object for the selected subject ID
   const metadata = data.metadata.find(item => item.id === parseInt(subjectId))
-  console.log("UPDATE FUNCTION");
 
   // Get a reference to the #sample-metadata div where the info will be displayed
   const infoBox = document.getElementById("sample-metadata");
@@ -27,12 +25,54 @@ function updateDemographicInfo(subjectId) {
 }
 
    
+function updateBarChart(subjectId) {
   
-  // Function to update the charts
-  function updateCharts(subjectId) {
-    // You can update the charts (bar chart, gauge chart, bubble chart) here
-    // based on the selected subject ID using D3.js and Plotly.
-  }
+  // Find the data object for the selected subject ID
+  const subjectData = data.samples.find(item => item.id === subjectId);
+
+  // Get the first 10 'otu_ids', 'otu_labels', and 'sample_values' data
+  const otuIds = subjectData.otu_ids.slice(0, 10);
+  const otuLabels = subjectData.otu_labels.slice(0, 10);
+  const sampleValues = subjectData.sample_values.slice(0, 10);
+  
+  // Combine the data into an array of objects
+  const tableData = otuIds.map((otuId, index) => ({
+    otuId,
+    otuLabel: otuLabels[index],
+    sampleValue: sampleValues[index],
+  }));
+
+  // Sort tableData based on sampleValue in ascending order
+  tableData.sort((a, b) => a.sampleValue - b.sampleValue);
+  
+  // Format the y-axis labels with "OTU " prefix
+  const yLabels = otuIds.map(otuId => `OTU ${otuId}`);
+
+  // Create the data trace for the bar chart
+  const trace = {
+    type: "bar",
+    orientation: "h",
+    x: tableData.map(entry => entry.sampleValue),
+    y: yLabels,
+    text: otuLabels,
+  };
+
+  // Create the data array for the Plotly chart
+  const chartData = [trace];
+
+  // Define the layout for the chart
+  const layout = {
+    title: `Top 10 OTUs for Subject ${subjectId}`,
+    xaxis: { title: "Sample Values" },
+    yaxis: { title: "OTU IDs"}
+  };
+
+  // Plot the bar chart
+  Plotly.newPlot("bar", chartData, layout);
+}
+
+
+
   
 // _________________________________________________________________________________
 
@@ -56,7 +96,6 @@ document.addEventListener('DOMContentLoaded', function() {
       option.text = name;
       dropdown.appendChild(option);
         });
-  
   
     // Call optionChanged with the default value
     optionChanged(data.names[0]);
