@@ -2,7 +2,9 @@ function optionChanged(selectedValue) {
   // When the user selects a new value, update the demographic info and charts
   updateDemographicInfo(selectedValue);
   updateBarChart(selectedValue);
+  updateBubbleChart(selectedValue);
 }
+
 
 
 function updateDemographicInfo(subjectId) {
@@ -25,6 +27,7 @@ function updateDemographicInfo(subjectId) {
 }
 
    
+
 function updateBarChart(subjectId) {
   
   // Find the data object for the selected subject ID
@@ -44,17 +47,18 @@ function updateBarChart(subjectId) {
 
   // Sort tableData based on sampleValue in ascending order
   tableData.sort((a, b) => a.sampleValue - b.sampleValue);
-  
-  // Format the y-axis labels with "OTU " prefix
-  const yLabels = otuIds.map(otuId => `OTU ${otuId}`);
+  console.log(tableData)
+
+  const sortedYLabels = tableData.map(entry => `OTU ${entry.otuId}`);
+  const sortedOtuLabels = tableData.map(entry => entry.otuLabel);
 
   // Create the data trace for the bar chart
   const trace = {
     type: "bar",
     orientation: "h",
     x: tableData.map(entry => entry.sampleValue),
-    y: yLabels,
-    text: otuLabels,
+    y: sortedYLabels,
+    text: sortedOtuLabels,
   };
 
   // Create the data array for the Plotly chart
@@ -73,8 +77,37 @@ function updateBarChart(subjectId) {
 
 
 
+function updateBubbleChart(subjectId) {
+  const subjectData = data.samples.find(item => item.id === subjectId);
+
+  const trace = {
+    type: "bubble",
+    mode: "markers",
+    x: subjectData.otu_ids,
+    y: subjectData.sample_values,
+    marker: {
+      size: subjectData.sample_values,
+      color: subjectData.otu_ids,
+      colorscale: "Viridis", 
+      opacity: 0.7
+    },
+    text: subjectData.otu_labels,
+  };
+
+  const chartData = [trace];
+
+  const layout = {
+    title: `Bubble Chart for Subject ${subjectId}`,
+    xaxis: { title: "OTU IDs" },
+    yaxis: { title: "Sample Values" }
+  };
+
+  Plotly.newPlot("bubble", chartData, layout);
+}
+
   
 // _________________________________________________________________________________
+
 
 
 // Define the URL for fetching data
@@ -102,7 +135,5 @@ document.addEventListener('DOMContentLoaded', function() {
     }).catch(error => {
       console.error("Error fetching data:", error);
     });
-  
-   
-  });
+});
   
