@@ -2,4 +2,4 @@
 
 The output of the javascript and html code found in this project can be viewed at:
 
-https://jnorthdata.github.io/belly-button-challenge/
+https://jnorthdata.github.io/Belly_Button_Biodiversity_Dashboard/
